@@ -2,6 +2,7 @@ import express from "express";
 import usersController from "../controllers/usersController.js";
 import verifyToken from "../middlewares/auth.js";
 import { body, validationResult } from "express-validator";
+import checkRoles from "../middlewares/roles.js";
 import { PrismaClient } from "../generated/prisma/index.js";
 const prisma = new PrismaClient();
 
@@ -33,6 +34,7 @@ router.post(
       .isInt()
       .withMessage("El rol es obligatorio y debe ser un número"),
   ],
+  checkRoles(["admin", "secretary"]),
   usersController.register
 );
 

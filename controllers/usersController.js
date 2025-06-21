@@ -46,8 +46,8 @@ const usersController = {
       return res.status(400).json({ errors: messages });
     }
     try {
-      const { email, password } = req.body;
-      const user = await prisma.users.findUnique({ where: { email } });
+      const { email, password, client } = req.body;
+      const user = await prisma.users.findUnique({ where: { email }, include: { roles: true }, });
 
       const invalidCredentials = "Correo o contraseña incorrectos";
 
@@ -55,6 +55,17 @@ const usersController = {
 
       const valid = await bcrypt.compare(password, user.password);
       if (!valid) return res.status(401).json({ errors: [invalidCredentials] });
+
+      const role = user.roles.name.toLowerCase();
+      if (
+        (client === "web" && !["admin", "secretary"].includes(role)) ||
+        (client === "mobile" && role !== "student") ||
+        (client === "desktop" && role !== "teacher")
+      ) {
+        return res
+          .status(403)
+          .json({ errors: ["Acceso denegado para este tipo de usuario"] });
+      }
 
       const token = jwt.sign({ id: user.id, email: user.email }, secretKey, {
         expiresIn: "1h",
