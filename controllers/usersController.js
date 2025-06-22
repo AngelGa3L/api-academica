@@ -13,7 +13,7 @@ const usersController = {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       const messages = errors.array().map((validations) => validations.msg);
-      return res.status(400).json({ status: "error", data:{}, msg: messages });
+      return res.status(400).json({ status: "error", data: {}, msg: messages });
     }
     try {
       const { first_name, last_name, email, password, role_id } = req.body;
@@ -35,7 +35,7 @@ const usersController = {
         data: { id: user.id, email: user.email },
       });
     } catch (error) {
-      res.status(400).json({ status: "error", data:{}, msg: error.message });
+      res.status(400).json({ status: "error", data: {}, msg: error.message });
     }
   },
 
@@ -44,7 +44,7 @@ const usersController = {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       const messages = errors.array().map((validations) => validations.msg);
-      return res.status(400).json({status: "error", data:{}, msg: messages });
+      return res.status(400).json({ status: "error", data: {}, msg: messages });
     }
     try {
       const { email, password, client } = req.body;
@@ -65,20 +65,29 @@ const usersController = {
         return res
           .status(401)
           .json({ status: "error", data: {}, msg: [invalidCredentials] });
-
+          
+      if (user.is_active === false) {
+        return res.status(403).json({
+          status: "error",
+          data: {},
+          msg: ["Usuario inactivo. No tienes permisos para acceder."],
+        });
+      }
       const role = user.roles.name.toLowerCase();
       if (
         (client === "web" && !["admin", "secretary"].includes(role)) ||
         (client === "mobile" && role !== "student") ||
         (client === "desktop" && role !== "teacher")
       ) {
-        return res
-          .status(403)
-          .json({status: "error", data:{}, msg: ["Acceso denegado para este tipo de usuario"] });
+        return res.status(403).json({
+          status: "error",
+          data: {},
+          msg: ["Acceso denegado para este tipo de usuario"],
+        });
       }
 
       const token = jwt.sign({ id: user.id, email: user.email }, secretKey, {
-        expiresIn: "1h",
+        expiresIn: "10m",
       });
       res.status(200).json({
         status: "success",
@@ -87,6 +96,57 @@ const usersController = {
       });
     } catch (error) {
       res.status(500).json({ error: error.message });
+    }
+  },
+
+  update: async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { first_name, last_name, email, role_id, is_active } = req.body;
+
+      const user = await prisma.users.findUnique({
+        where: { id: parseInt(id) },
+      });
+      if (!user) {
+        return res
+          .status(404)
+          .json({ status: "error", data: {}, msg: "Usuario no encontrado" });
+      }
+
+      const updated = await prisma.users.update({
+        where: { id: parseInt(id) },
+        data: {
+          ...(first_name && { first_name }),
+          ...(last_name && { last_name }),
+          ...(email && { email }),
+          ...(role_id && { role_id: parseInt(role_id) }),
+          ...(typeof is_active !== "undefined" && { is_active }),
+        },
+      });
+
+      res.status(200).json({
+        status: "success",
+        data: { email: updated.email },
+        msg: "Usuario actualizado correctamente",
+      });
+    } catch (error) {
+      res.status(400).json({ status: "error", data: {}, msg: error.message });
+    }
+  },
+
+  //Ruta para obtener todos los usuarios
+  getAll: async (req, res) => {
+    try {
+      const users = await prisma.users.findMany({
+        include: { roles: true },
+      });
+      res.status(200).json({
+        status: "success",
+        data: users,
+        msg: "Lista de usuarios obtenida correctamente",
+      });
+    } catch (error) {
+      res.status(500).json({ status: "error", data: {}, msg: error.message });
     }
   },
 };
