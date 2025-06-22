@@ -5,7 +5,7 @@ const verifyToken = (req, res, next) => {
   const token = req.headers.authorization?.split(' ')[1];
 
   if (!token) {
-    return res.status(401).json({ error: 'Token requerido' });
+    return res.status(401).json({ status: "error", data:{}, msg: 'Token requerido' });
   }
 
   try {
@@ -13,7 +13,7 @@ const verifyToken = (req, res, next) => {
     req.user = decoded; 
     next();
   } catch (err) {
-    return res.status(403).json({ error: 'Token inválido' });
+    return res.status(403).json({ status: "error", data:{}, msg: 'Token inválido' });
   }
 };
 

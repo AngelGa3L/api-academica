@@ -13,7 +13,7 @@ const usersController = {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       const messages = errors.array().map((validations) => validations.msg);
-      return res.status(400).json({ errors: messages });
+      return res.status(400).json({ status: "error", data:{}, msg: messages });
     }
     try {
       const { first_name, last_name, email, password, role_id } = req.body;
@@ -30,11 +30,12 @@ const usersController = {
       });
 
       res.status(201).json({
+        status: "success",
         msg: "Usuario creado",
-        user: { id: user.id, email: user.email },
+        data: { id: user.id, email: user.email },
       });
     } catch (error) {
-      res.status(400).json({ error: error.message });
+      res.status(400).json({ status: "error", data:{}, msg: error.message });
     }
   },
 
@@ -43,18 +44,27 @@ const usersController = {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       const messages = errors.array().map((validations) => validations.msg);
-      return res.status(400).json({ errors: messages });
+      return res.status(400).json({status: "error", data:{}, msg: messages });
     }
     try {
       const { email, password, client } = req.body;
-      const user = await prisma.users.findUnique({ where: { email }, include: { roles: true }, });
+      const user = await prisma.users.findUnique({
+        where: { email },
+        include: { roles: true },
+      });
 
       const invalidCredentials = "Correo o contraseña incorrectos";
 
-      if (!user) return res.status(401).json({ errors: [invalidCredentials] });
+      if (!user)
+        return res
+          .status(401)
+          .json({ status: "error", data: {}, msg: [invalidCredentials] });
 
       const valid = await bcrypt.compare(password, user.password);
-      if (!valid) return res.status(401).json({ errors: [invalidCredentials] });
+      if (!valid)
+        return res
+          .status(401)
+          .json({ status: "error", data: {}, msg: [invalidCredentials] });
 
       const role = user.roles.name.toLowerCase();
       if (
@@ -64,16 +74,16 @@ const usersController = {
       ) {
         return res
           .status(403)
-          .json({ errors: ["Acceso denegado para este tipo de usuario"] });
+          .json({status: "error", data:{}, msg: ["Acceso denegado para este tipo de usuario"] });
       }
 
       const token = jwt.sign({ id: user.id, email: user.email }, secretKey, {
         expiresIn: "1h",
       });
-      res.json({
+      res.status(200).json({
+        status: "success",
+        data: { id: user.id, email: user.email, token },
         msg: "Login exitoso",
-        data: { id: user.id, email: user.email },
-        token,
       });
     } catch (error) {
       res.status(500).json({ error: error.message });

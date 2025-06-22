@@ -11,17 +11,25 @@ const checkRoles = (allowedRoles) => {
         include: { roles: true },
       });
       if (!user) {
-        return res.status(404).json({ error: "Usuario no encontrado" });
+        return res
+          .status(404)
+          .json({ status: "error", data: {}, msg: "Usuario no encontrado" });
       }
       if (!allowedRoles.includes(user.roles.name.toLowerCase())) {
         return res.status(403).json({
-          error: "Acceso denegado: No tienes permisos suficientes",
+          status: "error",
+          data: {},
+          msg: "Acceso denegado: No tienes permisos suficientes",
         });
       }
       next();
     } catch (error) {
       console.error(error);
-      res.status(500).json({ error: "Error al verificar permisos" });
+      res.status(500).json({
+        status: "error",
+        data: {},
+        msg: "Error al verificar permisos",
+      });
     }
   };
 };
