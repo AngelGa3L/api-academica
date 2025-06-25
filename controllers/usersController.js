@@ -65,7 +65,7 @@ const usersController = {
         return res
           .status(401)
           .json({ status: "error", data: {}, msg: [invalidCredentials] });
-          
+
       if (user.is_active === false) {
         return res.status(403).json({
           status: "error",
@@ -144,6 +144,28 @@ const usersController = {
         status: "success",
         data: users,
         msg: "Lista de usuarios obtenida correctamente",
+      });
+    } catch (error) {
+      res.status(500).json({ status: "error", data: {}, msg: error.message });
+    }
+  },
+  //Ruta para un usuario por id
+  getById: async (req, res) => {
+    try {
+      const { id } = req.params;
+      const user = await prisma.users.findUnique({
+        where: { id: parseInt(id) },
+        include: { roles: true },
+      });
+      if (!user) {
+        return res
+          .status(404)
+          .json({ status: "error", data: {}, msg: "Usuario no encontrado" });
+      }
+      res.status(200).json({
+        status: "success",
+        data: user,
+        msg: "Usuario obtenido correctamente",
       });
     } catch (error) {
       res.status(500).json({ status: "error", data: {}, msg: error.message });

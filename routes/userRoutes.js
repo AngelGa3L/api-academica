@@ -101,4 +101,10 @@ router.get(
   usersController.getAll
 );
 
+router.get("/users/:id",
+  verifyToken,
+  checkRoles(["admin", "secretary"]),
+  usersController.getById
+);
+
 export default router;
