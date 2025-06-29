@@ -9,23 +9,20 @@ datasource db {
 }
 
 model attendance {
-  id                                 Int                @id @default(autoincrement())
-  user_id                            Int
-  subject_id                         Int                @db.SmallInt
-  teacher_id                         Int
-  date                               DateTime           @db.Date
-  check_in_time                      DateTime?          @db.Time(0)
-  status                             attendance_status?
-  sensor_id                          Int?               @db.SmallInt
-  notes                              String?            @db.Text
-  users_attendance_user_idTousers    users              @relation("attendance_user_idTousers", fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "attendance_ibfk_1")
-  subjects                           subjects           @relation(fields: [subject_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "attendance_ibfk_2")
-  users_attendance_teacher_idTousers users              @relation("attendance_teacher_idTousers", fields: [teacher_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "attendance_ibfk_3")
-  sensors                            sensors?           @relation(fields: [sensor_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "attendance_ibfk_4")
+  id                              Int                @id @default(autoincrement())
+  user_id                         Int
+  subject_id                      Int                @db.SmallInt
+  date                            DateTime           @db.Date
+  check_in_time                   DateTime?          @db.Time(0)
+  status                          attendance_status?
+  sensor_id                       Int?               @db.SmallInt
+  notes                           String?            @db.Text
+  users_attendance_user_idTousers users              @relation("attendance_user_idTousers", fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "attendance_ibfk_1")
+  subjects                        subjects           @relation(fields: [subject_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "attendance_ibfk_2")
+  sensors                         sensors?           @relation(fields: [sensor_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "attendance_ibfk_4")
 
   @@index([sensor_id], map: "sensor_id")
   @@index([subject_id], map: "subject_id")
-  @@index([teacher_id], map: "teacher_id")
   @@index([user_id], map: "user_id")
 }
 
@@ -92,6 +89,7 @@ model sensors {
   ip_address   String?       @db.VarChar(20)
   attendance   attendance[]
   classrooms   classrooms?   @relation(fields: [classroom_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "sensors_ibfk_1")
+  work_shifts  work_shifts[]
 
   @@index([classroom_id], map: "classroom_id")
 }
@@ -138,22 +136,36 @@ model teacher_subject_group {
 }
 
 model users {
-  id                                      Int                     @id @default(autoincrement())
-  first_name                              String                  @db.VarChar(50)
-  last_name                               String                  @db.VarChar(50)
-  email                                   String                  @unique(map: "email") @db.VarChar(100)
-  password                                String                  @db.VarChar(255)
-  role_id                                 Int                     @db.TinyInt
-  is_active                               Boolean?                @default(true)
-  attendance_attendance_user_idTousers    attendance[]            @relation("attendance_user_idTousers")
-  attendance_attendance_teacher_idTousers attendance[]            @relation("attendance_teacher_idTousers")
-  grades                                  grades[]
-  rfid_cards                              rfid_cards[]
-  student_group                           student_group[]
-  teacher_subject_group                   teacher_subject_group[]
-  roles                                   roles                   @relation(fields: [role_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "users_ibfk_1")
+  id                                   Int                     @id @default(autoincrement())
+  first_name                           String                  @db.VarChar(50)
+  last_name                            String                  @db.VarChar(50)
+  email                                String                  @unique(map: "email") @db.VarChar(100)
+  password                             String                  @db.VarChar(255)
+  role_id                              Int                     @db.TinyInt
+  is_active                            Boolean?                @default(true)
+  attendance_attendance_user_idTousers attendance[]            @relation("attendance_user_idTousers")
+  grades                               grades[]
+  rfid_cards                           rfid_cards[]
+  student_group                        student_group[]
+  teacher_subject_group                teacher_subject_group[]
+  roles                                roles                   @relation(fields: [role_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "users_ibfk_1")
+  work_shifts                          work_shifts[]
 
   @@index([role_id], map: "role_id")
+}
+
+model work_shifts {
+  id             Int       @id @default(autoincrement())
+  user_id        Int
+  date           DateTime  @db.Date
+  check_in_time  DateTime  @db.Time(0)
+  check_out_time DateTime? @db.Time(0)
+  sensor_id      Int?      @db.SmallInt
+  users          users     @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "work_shifts_ibfk_1")
+  sensors        sensors?  @relation(fields: [sensor_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "work_shifts_ibfk_2")
+
+  @@index([sensor_id], map: "sensor_id")
+  @@index([user_id], map: "user_id")
 }
 
 enum schedules_weekday {
