@@ -3,6 +3,7 @@ import cors from 'cors'
 import userRoutes from './routes/userRoutes.js'
 import groupRoutes from './routes/groupRoutes.js'
 import student_groupRoutes from './routes/student_groupRoutes.js'
+import subjectRoutes from './routes/subjectRoutes.js'
 
 
 const app = express()
@@ -18,6 +19,7 @@ app.use(express.json());
 app.use('/api', userRoutes);
 app.use('/api/groups', groupRoutes);
 app.use('/api/student-groups', student_groupRoutes);
+app.use('/api/subjects', subjectRoutes);
 
 
 
