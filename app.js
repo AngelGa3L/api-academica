@@ -2,6 +2,7 @@ import express from 'express'
 import cors from 'cors'
 import userRoutes from './routes/userRoutes.js'
 import groupRoutes from './routes/groupRoutes.js'
+import student_groupRoutes from './routes/student_groupRoutes.js'
 
 
 const app = express()
@@ -16,6 +17,7 @@ app.use(cors({
 app.use(express.json());
 app.use('/api', userRoutes);
 app.use('/api/groups', groupRoutes);
+app.use('/api/student-groups', student_groupRoutes);
 
 
 
