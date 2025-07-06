@@ -6,6 +6,7 @@ import student_groupRoutes from './routes/student_groupRoutes.js'
 import subjectRoutes from './routes/subjectRoutes.js'
 import scheduleRoutes from './routes/scheduleRoutes.js'
 import teacherSubjectGroupRoutes from './routes/teacherSubjectGroupRoutes.js'
+import classroomRoutes from './routes/classroomRoutes.js'
 
 
 const app = express()
@@ -24,7 +25,7 @@ app.use('/api/student-groups', student_groupRoutes);
 app.use('/api/subjects', subjectRoutes);
 app.use('/api/schedules', scheduleRoutes);
 app.use('/api/teacher-subject-groups', teacherSubjectGroupRoutes);
-
+app.use('/api/classrooms', classroomRoutes);
 
 app.listen(port, () => {
     console.log(`App listening on port ${port}`)
