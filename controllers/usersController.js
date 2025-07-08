@@ -171,6 +171,47 @@ const usersController = {
       res.status(500).json({ status: "error", data: {}, msg: error.message });
     }
   },
+  getByRole: async (req, res) => {
+    try {
+      const { role_id } = req.params;
+
+      const role = await prisma.roles.findUnique({
+        where: { id: parseInt(role_id) },
+      });
+
+      if (!role) {
+        return res.status(404).json({
+          status: "error",
+          data: {},
+          msg: ["Rol no encontrado"],
+        });
+      }
+      const users = await prisma.users.findMany({
+        where: { role_id: parseInt(role_id) },
+        include: { roles: true },
+        orderBy: [{ first_name: "asc" }, { last_name: "asc" }],
+      });
+
+      if (users.length === 0) {
+        return res.status(404).json({
+          status: "error",
+          data: {},
+          msg: [`No se encontraron usuarios con el rol ${role.name}`],
+        });
+      }
+      res.status(200).json({
+        status: "success",
+        data: users,
+        msg: [`Usuarios obtenidos correctamente`],
+      });
+    } catch (error) {
+      res.status(500).json({
+        status: "error",
+        data: {},
+        msg: [error.message],
+      });
+    }
+  },
 };
 
 export default usersController;

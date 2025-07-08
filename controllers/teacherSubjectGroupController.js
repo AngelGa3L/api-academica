@@ -554,6 +554,61 @@ const teacherSubjectGroupController = {
       });
     }
   },
+  getByStudent: async (req, res) => {
+    try {
+      const { student_id } = req.params;
+      const studentGroup = await prisma.student_group.findFirst({
+        where: { student_id: parseInt(student_id) },
+        include: { groups: true },
+      });
+
+      if (!studentGroup) {
+        return res.status(404).json({
+          status: "error",
+          data: {},
+          msg: ["Estudiante no asignado a ningún grupo"],
+        });
+      }
+
+      const teacherSubjectGroups = await prisma.teacher_subject_group.findMany({
+        where: { group_id: studentGroup.group_id },
+        include: {
+          users: { select: { id: true, first_name: true, last_name: true } },
+          subjects: { select: { id: true, name: true, code: true } },
+          groups: { select: { id: true, name: true, grade: true } },
+          classrooms: { select: { id: true, name: true } },
+          schedules: {
+            select: {
+              id: true,
+              weekday: true,
+              start_time: true,
+              end_time: true,
+            },
+          },
+        },
+        orderBy: [
+          { schedules: { weekday: "asc" } },
+          { schedules: { start_time: "asc" } },
+        ],
+      });
+
+      res.status(200).json({
+        status: "success",
+        data: {
+          student_group: studentGroup.groups,
+          schedule: teacherSubjectGroups,
+        },
+        msg: ["Horario del estudiante obtenido exitosamente"],
+      });
+    } catch (error) {
+      console.error("Error al obtener horario por estudiante:", error);
+      res.status(500).json({
+        status: "error",
+        data: {},
+        msg: ["Error interno del servidor"],
+      });
+    }
+  },
 };
 
 export default teacherSubjectGroupController;
