@@ -13,6 +13,10 @@ const createGroupValidation = [
     .withMessage("El nombre del grupo es requerido")
     .isLength({ min: 1, max: 20 })
     .withMessage("El nombre debe tener entre 1 y 20 caracteres")
+    .matches(/^[A-Za-z0-9\-]{1,20}$/)
+    .withMessage(
+      "El nombre solo puede contener letras, números y guiones (ej: 12-A, 10-B, 9-C)"
+    )
     .trim(),
   body("grade")
     .optional()
@@ -27,6 +31,10 @@ const updateGroupValidation = [
     .optional()
     .isLength({ min: 1, max: 20 })
     .withMessage("El nombre debe tener entre 1 y 20 caracteres")
+    .matches(/^[A-Za-z0-9\-]{1,20}$/)
+    .withMessage(
+      "El nombre solo puede contener letras, números y guiones (ej: 12-A, 10-B, 9-C)"
+    )
     .trim(),
   body("grade")
     .optional()
