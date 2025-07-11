@@ -8,6 +8,7 @@ import scheduleRoutes from './routes/scheduleRoutes.js'
 import teacherSubjectGroupRoutes from './routes/teacherSubjectGroupRoutes.js'
 import classroomRoutes from './routes/classroomRoutes.js'
 import gradeRoutes from "./routes/gradeRoutes.js"
+import rfidRoutes from "./routes/rfidRoutes.js"
 
 
 const app = express()
@@ -28,6 +29,7 @@ app.use('/api/schedules', scheduleRoutes);
 app.use('/api/teacher-subject-groups', teacherSubjectGroupRoutes);
 app.use('/api/classrooms', classroomRoutes);
 app.use('/api/grades', gradeRoutes)
+app.use('/api/rfid', rfidRoutes)
 
 app.listen(port, () => {
     console.log(`App listening on port ${port}`)
