@@ -2,14 +2,7 @@ import { PrismaClient } from "../generated/prisma/index.js";
 import { validationResult } from "express-validator";
 
 const prisma = new PrismaClient();
-function generateRFIDUid(length = 8) {
-  const chars = "ABCDEF0123456789";
-  let uid = "";
-  for (let i = 0; i < length; i++) {
-    uid += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-  return uid;
-}
+
 const rfidsController = {
   create: async (req, res) => {
     const errors = validationResult(req);
@@ -18,10 +11,7 @@ const rfidsController = {
       return res.status(400).json({ status: "error", data: {}, msg: messages });
     }
     try {
-      let { uid, user_id } = req.body;
-      if (!uid) {
-        uid = generateRFIDUid(8 + Math.floor(Math.random() * 13)); // 8 a 20 caracteres
-      }
+      const { uid, user_id } = req.body;
       const user = await prisma.users.findUnique({
         where: { id: Number(user_id) },
       });

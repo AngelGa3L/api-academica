@@ -8,7 +8,6 @@ const router = express.Router();
 
 const rfidValidationRules = [
   body("uid")
-    .optional()
     .matches(/^[A-F0-9]{8,20}$/)
     .withMessage(
       "El UID debe tener entre 8 y 20 caracteres hexadecimales en mayúsculas"
