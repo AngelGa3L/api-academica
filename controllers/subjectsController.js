@@ -59,7 +59,7 @@ const subjectsController = {
     try {
       const subjects = await prisma.subjects.findMany({
         orderBy: {
-          name: "asc",
+          id: "asc",
         },
       });
 
