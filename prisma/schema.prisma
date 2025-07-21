@@ -143,6 +143,8 @@ model users {
   password                             String                  @db.VarChar(255)
   role_id                              Int                     @db.TinyInt
   is_active                            Boolean?                @default(true)
+  verification_code                    String?                 @db.VarChar(255)
+  verification_code_expires            DateTime?               @db.DateTime(0)
   attendance_attendance_user_idTousers attendance[]            @relation("attendance_user_idTousers")
   grades                               grades[]
   rfid_cards                           rfid_cards[]
