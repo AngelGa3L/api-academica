@@ -115,4 +115,21 @@ router.get(
   usersController.getByRole
 );
 
+router.post(
+  "/users/verify",
+  [
+    body("email")
+      .isEmail()
+      .withMessage("Formato de email inválido")
+      .notEmpty()
+      .withMessage("Email es obligatorio"),
+    body("code")
+      .isLength({ min: 6, max: 6 })
+      .withMessage("El código debe tener 6 dígitos")
+      .notEmpty()
+      .withMessage("El código es obligatorio"),
+  ],
+  usersController.verify2fa
+);
+
 export default router;

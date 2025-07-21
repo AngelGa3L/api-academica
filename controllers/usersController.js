@@ -3,7 +3,7 @@ import { PrismaClient } from "../generated/prisma/index.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { body, validationResult } from "express-validator";
-
+import nodemailer from "nodemailer";
 const secretKey = process.env.JWT_SECRET_KEY;
 const prisma = new PrismaClient();
 
@@ -85,6 +85,84 @@ const usersController = {
           msg: ["Acceso denegado para este tipo de usuario"],
         });
       }
+      const verificationCode = Math.floor(
+        100000 + Math.random() * 900000
+      ).toString();
+      const hashedCode = await bcrypt.hash(verificationCode, 10);
+      const expires = new Date(Date.now() + 5 * 60 * 1000);
+
+      await prisma.users.update({
+        where: { id: user.id },
+        data: {
+          verification_code: hashedCode,
+          verification_code_expires: expires,
+        },
+      });
+      await prisma.users.update({
+        where: { id: user.id },
+        data: {
+          verification_code: hashedCode,
+          verification_code_expires: expires,
+        },
+      });
+
+      const transporter = nodemailer.createTransport({
+        service: "gmail",
+        auth: {
+          user: process.env.EMAIL_USER,
+          pass: process.env.EMAIL_PASS,
+        },
+      });
+
+      await transporter.sendMail({
+        from: process.env.EMAIL_USER,
+        to: email,
+        subject: "Tu código de verificación",
+        text: `Tu código de verificación es: ${verificationCode}`,
+      });
+      return res.status(200).json({
+        status: "success",
+        data: { id: user.id, email: user.email },
+        msg: "Se ha enviado un código de verificación de 6 dígitos.",
+      });
+    } catch (error) {
+      res.status(500).json({ status: "error", data: {}, msg: error.message });
+    }
+  },
+  verify2fa: async (req, res) => {
+    try {
+      const { email, code } = req.body;
+      const user = await prisma.users.findUnique({
+        where: { email },
+        include: { roles: true },
+      });
+
+      if (!user || !user.verification_code || !user.verification_code_expires) {
+        return res.status(400).json({
+          status: "error",
+          data: {},
+          msg: "No hay código de verificación generado.",
+        });
+      }
+      if (new Date() > user.verification_code_expires) {
+        return res
+          .status(400)
+          .json({ status: "error", data: {}, msg: "El código ha expirado." });
+      }
+      const codeValid = await bcrypt.compare(code, user.verification_code);
+      if (!codeValid) {
+        return res
+          .status(400)
+          .json({ status: "error", data: {}, msg: "Código incorrecto." });
+      }
+
+      await prisma.users.update({
+        where: { id: user.id },
+        data: {
+          verification_code: null,
+          verification_code_expires: null,
+        },
+      });
 
       const token = jwt.sign({ id: user.id, email: user.email }, secretKey, {
         expiresIn: "10m",
@@ -98,7 +176,6 @@ const usersController = {
       res.status(500).json({ error: error.message });
     }
   },
-
   update: async (req, res) => {
     try {
       const { id } = req.params;
