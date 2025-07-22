@@ -299,15 +299,25 @@ const usersController = {
   forgotPassword: async (req, res) => {
     try {
       const { email } = req.body;
-      const user = await prisma.users.findUnique({ where: { email } });
+      const user = await prisma.users.findUnique({
+        where: { email },
+        include: { roles: true },
+      });
       if (!user) {
         return res
           .status(404)
-          .json({ status: "error", msg: "Usuario no encontrado" });
+          .json({ status: "error", data: {}, msg: "Usuario no encontrado" });
+      }
+      if (user.roles && user.roles.name.toLowerCase() === "student") {
+        return res.status(403).json({
+          status: "error",
+          data: {},
+          msg: "No tienes permisos para recuperar la contraseña.",
+        });
       }
 
       const token = crypto.randomBytes(32).toString("hex");
-      const expires = new Date(Date.now() + 60 * 60 * 1000); // 1 hora
+      const expires = new Date(Date.now() + 60 * 60 * 1000);
 
       await prisma.users.update({
         where: { id: user.id },
@@ -333,9 +343,11 @@ const usersController = {
         html: `<p>Haz clic en el siguiente <a href="${resetUrl}">enlace para recuperar tu contraseña</a>.</p>`,
       });
 
-      res
-        .status(200)
-        .json({ status: "success", msg: "Correo de recuperación enviado" });
+      res.status(200).json({
+        status: "success",
+        data: {},
+        msg: "Correo de recuperación enviado",
+      });
     } catch (error) {
       res.status(500).json({ status: "error", msg: error.message });
     }
@@ -352,9 +364,11 @@ const usersController = {
         !user.reset_password_expires ||
         new Date() > user.reset_password_expires
       ) {
-        return res
-          .status(400)
-          .json({ status: "error", msg: "Token inválido o expirado" });
+        return res.status(400).json({
+          status: "error",
+          data: {},
+          msg: "Token inválido o expirado",
+        });
       }
 
       const hashedPassword = await bcrypt.hash(newPassword, 10);
@@ -373,7 +387,7 @@ const usersController = {
         msg: "Contraseña actualizada correctamente",
       });
     } catch (error) {
-      res.status(500).json({ status: "error", msg: error.message });
+      res.status(500).json({ status: "error", data: {}, msg: error.message });
     }
   },
 };
