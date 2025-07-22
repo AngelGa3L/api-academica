@@ -4,6 +4,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { body, validationResult } from "express-validator";
 import nodemailer from "nodemailer";
+import crypto from "crypto";
 const secretKey = process.env.JWT_SECRET_KEY;
 const prisma = new PrismaClient();
 
@@ -179,7 +180,8 @@ const usersController = {
   update: async (req, res) => {
     try {
       const { id } = req.params;
-      const { first_name, last_name, email, role_id, is_active, password } = req.body;
+      const { first_name, last_name, email, role_id, is_active, password } =
+        req.body;
 
       const user = await prisma.users.findUnique({
         where: { id: parseInt(id) },
@@ -292,6 +294,86 @@ const usersController = {
         data: {},
         msg: [error.message],
       });
+    }
+  },
+  forgotPassword: async (req, res) => {
+    try {
+      const { email } = req.body;
+      const user = await prisma.users.findUnique({ where: { email } });
+      if (!user) {
+        return res
+          .status(404)
+          .json({ status: "error", msg: "Usuario no encontrado" });
+      }
+
+      const token = crypto.randomBytes(32).toString("hex");
+      const expires = new Date(Date.now() + 60 * 60 * 1000); // 1 hora
+
+      await prisma.users.update({
+        where: { id: user.id },
+        data: {
+          reset_password_token: token,
+          reset_password_expires: expires,
+        },
+      });
+
+      const transporter = nodemailer.createTransport({
+        service: "gmail",
+        auth: {
+          user: process.env.EMAIL_USER,
+          pass: process.env.EMAIL_PASS,
+        },
+      });
+      const resetUrl = `http://localhost:3000/api/reset-password?token=${token}&email=${email}`;
+      await transporter.sendMail({
+        from: process.env.EMAIL_USER,
+        to: email,
+        subject: "Recupera tu contraseña",
+        text: `Haz clic en el siguiente enlace para recuperar tu contraseña: ${resetUrl}`,
+        html: `<p>Haz clic en el siguiente <a href="${resetUrl}">enlace para recuperar tu contraseña</a>.</p>`,
+      });
+
+      res
+        .status(200)
+        .json({ status: "success", msg: "Correo de recuperación enviado" });
+    } catch (error) {
+      res.status(500).json({ status: "error", msg: error.message });
+    }
+  },
+  resetPassword: async (req, res) => {
+    try {
+      const { email, token, newPassword } = req.body;
+      const user = await prisma.users.findUnique({ where: { email } });
+
+      if (
+        !user ||
+        !user.reset_password_token ||
+        user.reset_password_token !== token ||
+        !user.reset_password_expires ||
+        new Date() > user.reset_password_expires
+      ) {
+        return res
+          .status(400)
+          .json({ status: "error", msg: "Token inválido o expirado" });
+      }
+
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+      await prisma.users.update({
+        where: { id: user.id },
+        data: {
+          password: hashedPassword,
+          reset_password_token: null,
+          reset_password_expires: null,
+        },
+      });
+
+      res.status(200).json({
+        status: "success",
+        msg: "Contraseña actualizada correctamente",
+      });
+    } catch (error) {
+      res.status(500).json({ status: "error", msg: error.message });
     }
   },
 };

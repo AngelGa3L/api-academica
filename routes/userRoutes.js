@@ -28,7 +28,7 @@ router.post(
       .isLength({ min: 8 })
       .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).+$/)
       .withMessage(
-        "La contraseña debe contener al menos un caracter especial, una minúscula, una mayúscula y un número"
+        "La contraseña debe contener al menos 8 carateres de longitud, un caracter especial, una minúscula, una mayúscula y un número"
       ),
     body("role_id")
       .isInt()
@@ -87,7 +87,7 @@ router.put(
       .isLength({ min: 8 })
       .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).+$/)
       .withMessage(
-        "La contraseña debe contener al menos un caracter especial, una minúscula, una mayúscula y un número"
+        "La contraseña debe contener al menos 8 carateres de longitud, un caracter especial, una minúscula, una mayúscula y un número"
       ),
   ],
   (req, res, next) => {
@@ -137,6 +137,35 @@ router.post(
       .withMessage("El código es obligatorio"),
   ],
   usersController.verify2fa
+);
+router.post(
+  "/forgot-password",
+  [
+    body("email")
+      .isEmail()
+      .withMessage("Formato de email inválido")
+      .notEmpty()
+      .withMessage("Email es obligatorio"),
+  ],
+  usersController.forgotPassword
+);
+router.post(
+  "/reset-password",
+  [
+    body("email")
+      .isEmail()
+      .withMessage("Formato de email inválido")
+      .notEmpty()
+      .withMessage("Email es obligatorio"),
+    body("token").notEmpty().withMessage("El token es obligatorio"),
+    body("newPassword")
+      .isLength({ min: 8 })
+      .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).+$/)
+      .withMessage(
+        "La contraseña debe contener al menos 8 carateres de longitud, un caracter especial, una minúscula, una mayúscula y un número"
+      ),
+  ],
+  usersController.resetPassword
 );
 
 export default router;
