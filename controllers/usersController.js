@@ -179,7 +179,7 @@ const usersController = {
   update: async (req, res) => {
     try {
       const { id } = req.params;
-      const { first_name, last_name, email, role_id, is_active } = req.body;
+      const { first_name, last_name, email, role_id, is_active, password } = req.body;
 
       const user = await prisma.users.findUnique({
         where: { id: parseInt(id) },
@@ -188,6 +188,10 @@ const usersController = {
         return res
           .status(404)
           .json({ status: "error", data: {}, msg: "Usuario no encontrado" });
+      }
+      let hashedPassword;
+      if (password) {
+        hashedPassword = await bcrypt.hash(password, 10);
       }
 
       const updated = await prisma.users.update({
@@ -198,6 +202,7 @@ const usersController = {
           ...(email && { email }),
           ...(role_id && { role_id: parseInt(role_id) }),
           ...(typeof is_active !== "undefined" && { is_active }),
+          ...(password && { password: hashedPassword }),
         },
       });
 

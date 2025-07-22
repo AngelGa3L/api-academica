@@ -82,6 +82,13 @@ router.put(
       .optional()
       .isBoolean()
       .withMessage("El estado debe ser booleano"),
+    body("password")
+      .optional()
+      .isLength({ min: 8 })
+      .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).+$/)
+      .withMessage(
+        "La contraseña debe contener al menos un caracter especial, una minúscula, una mayúscula y un número"
+      ),
   ],
   (req, res, next) => {
     const errors = validationResult(req);
