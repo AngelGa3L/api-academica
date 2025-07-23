@@ -167,5 +167,6 @@ router.post(
   ],
   usersController.resetPassword
 );
+router.post("/resend", usersController.resendcode);
 
 export default router;

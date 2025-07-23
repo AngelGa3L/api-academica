@@ -390,6 +390,62 @@ const usersController = {
       res.status(500).json({ status: "error", data: {}, msg: error.message });
     }
   },
+  resendcode: async (req, res) => {
+    try {
+      const { email } = req.body;
+      const user = await prisma.users.findUnique({ where: { email } });
+      if (!user) {
+        return res.status(404).json({
+          status: "error",
+          data: {},
+          msg: "Usuario no encontrado",
+        });
+      }
+      if (user.roles && user.roles.name.toLowerCase() === "student") {
+        return res.status(403).json({
+          status: "error",
+          data: {},
+          msg: "No tienes permisos para recuperar la contraseña.",
+        });
+      }
+      const verificationCode = Math.floor(
+        100000 + Math.random() * 900000
+      ).toString();
+      const hashedCode = await bcrypt.hash(verificationCode, 10);
+      const expires = new Date(Date.now() + 5 * 60 * 1000);
+
+      await prisma.users.update({
+        where: { id: user.id },
+        data: {
+          verification_code: hashedCode,
+          verification_code_expires: expires,
+        },
+      });
+
+      const transporter = nodemailer.createTransport({
+        service: "gmail",
+        auth: {
+          user: process.env.EMAIL_USER,
+          pass: process.env.EMAIL_PASS,
+        },
+      });
+
+      await transporter.sendMail({
+        from: process.env.EMAIL_USER,
+        to: email,
+        subject: "Tu código de verificación",
+        text: `Tu código de verificación es: ${verificationCode}`,
+      });
+
+      res.status(200).json({
+        status: "success",
+        data: {},
+        msg: "Se ha reenviado el código de verificación.",
+      });
+    } catch (error) {
+      res.status(500).json({ status: "error", data: {}, msg: error.message });
+    }
+  },
 };
 
 export default usersController;
