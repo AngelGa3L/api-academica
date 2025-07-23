@@ -31,4 +31,10 @@ router.get(
   checkRoles(["admin", "secretary", "teacher"]),
   graphicsController.lowestSubject
 );
+router.get(
+  "/access-logs/:classroom_id",
+  verifyToken,
+  checkRoles(["admin", "secretary"]),
+  graphicsController.logsByClassroom
+);
 export default router;

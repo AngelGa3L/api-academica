@@ -257,6 +257,60 @@ const graphicsController = {
       res.status(500).json({ status: "error", msg: error.message });
     }
   },
+  logsByClassroom: async (req, res) => {
+    try {
+      const { classroom_id } = req.params;
+      const { startDate, endDate } = req.query;
+
+      if (!classroom_id) {
+        return res.status(400).json({
+          status: "error",
+          msg: "El parámetro classroom_id es obligatorio",
+        });
+      }
+
+      // Construir filtro de fecha
+      const dateFilter = {};
+      if (startDate) dateFilter.gte = new Date(startDate);
+      if (endDate) dateFilter.lte = new Date(endDate);
+
+      const logs = await prisma.access_logs.findMany({
+        where: {
+          classroom_id: parseInt(classroom_id),
+          ...(Object.keys(dateFilter).length > 0 && {
+            access_time: dateFilter,
+          }),
+        },
+        orderBy: { access_time: "desc" },
+        select: {
+          id: true,
+          access_time: true,
+          users: {
+            select: {
+              first_name: true,
+              last_name: true,
+              roles: { select: { name: true } },
+            },
+          },
+        },
+      });
+
+      const result = logs.map((log) => ({
+        first_name: log.users.first_name,
+        last_name: log.users.last_name,
+        role: log.users.roles.name,
+        access_time: log.access_time,
+      }));
+
+      res.status(200).json({
+        status: "success",
+        data: result,
+        msg: "Accesos al salón obtenidos correctamente",
+      });
+    } catch (error) {
+      res.status(500).json({ status: "error", msg: error.message });
+    }
+  },
 };
 
 export default graphicsController;
