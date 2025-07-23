@@ -36,7 +36,7 @@ router.put(
 router.get(
   "/",
   verifyToken,
-  checkRoles(["student"]),
+  checkRoles(["student", "teacher"]),
   attendancesController.getByFilters
 );
 
