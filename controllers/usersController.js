@@ -166,7 +166,7 @@ const usersController = {
       });
 
       const token = jwt.sign({ id: user.id, email: user.email }, secretKey, {
-        expiresIn: "10m",
+        expiresIn: "10h",
       });
       res.status(200).json({
         status: "success",
