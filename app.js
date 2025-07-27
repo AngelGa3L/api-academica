@@ -25,18 +25,18 @@ app.use(
 );
 
 app.use(express.json());
-app.use("/api", userRoutes);
-app.use("/api/groups", groupRoutes);
-app.use("/api/student-groups", student_groupRoutes);
-app.use("/api/subjects", subjectRoutes);
-app.use("/api/schedules", scheduleRoutes);
-app.use("/api/teacher-subject-groups", teacherSubjectGroupRoutes);
-app.use("/api/classrooms", classroomRoutes);
-app.use("/api/grades", gradeRoutes);
-app.use("/api/rfid", rfidRoutes);
-app.use("/api/attendance", attendanceRoutes);
-app.use("/api/hardware", sensorRoutes);
-app.use("/api/graphics", graphicRoutes);
+app.use("/api/academic/", userRoutes);
+app.use("/api/academic/groups/", groupRoutes);
+app.use("/api/academic/student-groups/", student_groupRoutes);
+app.use("/api/academic/subjects/", subjectRoutes);
+app.use("/api/academic/schedules/", scheduleRoutes);
+app.use("/api/academic/teacher-subject-groups/", teacherSubjectGroupRoutes);
+app.use("/api/academic/classrooms/", classroomRoutes);
+app.use("/api/academic/grades/", gradeRoutes);
+app.use("/api/academic/rfid/", rfidRoutes);
+app.use("/api/academic/attendance/", attendanceRoutes);
+app.use("/api/academic/hardware/", sensorRoutes);
+app.use("/api/academic/graphics/", graphicRoutes);
 app.listen(port, () => {
   console.log(`App listening on port ${port}`);
 });
