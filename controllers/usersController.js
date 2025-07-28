@@ -5,6 +5,8 @@ import jwt from "jsonwebtoken";
 import { body, validationResult } from "express-validator";
 import nodemailer from "nodemailer";
 import crypto from "crypto";
+import { Resend } from 'resend';
+
 const secretKey = process.env.JWT_SECRET_KEY;
 const prisma = new PrismaClient();
 
@@ -107,7 +109,7 @@ const usersController = {
         },
       });
 
-      const transporter = nodemailer.createTransport({
+      /*const transporter = nodemailer.createTransport({
         service: "gmail",
         auth: {
           user: process.env.EMAIL_USER,
@@ -120,7 +122,34 @@ const usersController = {
         to: email,
         subject: "Tu código de verificación",
         text: `Tu código de verificación es: ${verificationCode}`,
+      });*/
+      const resend = new Resend('re_15Wdmav8_JhutMuqDKqt85VSM5iF34Aei');
+      const htmlContent = `
+  <div style="font-family: Arial, sans-serif; padding: 20px; background-color: #f9f9f9;">
+    <div style="max-width: 600px; margin: auto; background: white; border-radius: 8px; padding: 30px; box-shadow: 0 0 10px rgba(0,0,0,0.1);">
+      <h2 style="color: #2c3e50; text-align: center;">🔐 SmartEntry</h2>
+      <p style="font-size: 16px; color: #333;">Hola,</p>
+      <p style="font-size: 16px; color: #333;">
+        Tu código de verificación es:
+      </p>
+      <div style="font-size: 28px; font-weight: bold; text-align: center; color: #1a73e8; margin: 20px 0;">
+        ${verificationCode}
+      </div>
+      <p style="font-size: 14px; color: #888;">
+        Si no solicitaste este código, puedes ignorar este correo.
+      </p>
+      <p style="font-size: 14px; color: #888;">Gracias,<br>El equipo de SmartEntry</p>
+    </div>
+  </div>
+`;
+
+      resend.emails.send({
+        from: 'SmartEntry <no-reply@smartentry.space>',
+        to: user.email,
+        subject: "Tu código de verificación",
+        html: htmlContent,
       });
+
       return res.status(200).json({
         status: "success",
         data: { id: user.id, email: user.email },
@@ -327,7 +356,7 @@ const usersController = {
         },
       });
 
-      const transporter = nodemailer.createTransport({
+      /*const transporter = nodemailer.createTransport({
         service: "gmail",
         auth: {
           user: process.env.EMAIL_USER,
@@ -341,8 +370,34 @@ const usersController = {
         subject: "Recupera tu contraseña",
         text: `Haz clic en el siguiente enlace para recuperar tu contraseña: ${resetUrl}`,
         html: `<p>Haz clic en el siguiente <a href="${resetUrl}">enlace para recuperar tu contraseña</a>.</p>`,
+      });*/
+      const resend = new Resend('re_15Wdmav8_JhutMuqDKqt85VSM5iF34Aei');
+      const resetUrl = `https://smartentry.space/reset-password?token=${token}&email=${email}`;
+      const htmlContent = `
+  <div style="font-family: Arial, sans-serif; padding: 20px; background-color: #f9f9f9;">
+    <div style="max-width: 600px; margin: auto; background: white; border-radius: 8px; padding: 30px; box-shadow: 0 0 10px rgba(0,0,0,0.1);">
+      <h2 style="color: #2c3e50; text-align: center;">🔒 Recuperar contraseña</h2>
+      <p style="font-size: 16px; color: #333;">Hola,</p>
+      <p style="font-size: 16px; color: #333;">
+        Recibimos una solicitud para restablecer tu contraseña.
+      </p>
+      <p style="font-size: 16px; color: #333;">
+        Haz clic en el siguiente botón o enlace:
+      </p>
+      <div style="text-align: center; margin: 20px 0;">
+        <a href="${resetUrl}" style="background-color: #1a73e8; color: white; padding: 12px 24px; border-radius: 5px; text-decoration: none; font-size: 16px;">Restablecer contraseña</a>
+      </div>
+      <p style="font-size: 14px; color: #888;">Este enlace expirará en 1 hora. Si no fuiste tú, puedes ignorar este correo.</p>
+      <p style="font-size: 14px; color: #888;">– El equipo de SmartEntry</p>
+    </div>
+  </div>
+`;
+      await resend.emails.send({
+        from: 'SmartEntry <no-reply@smartentry.space>',
+        to: user.email,
+        subject: 'Recupera tu contraseña',
+        html: htmlContent,
       });
-
       res.status(200).json({
         status: "success",
         data: {},
@@ -421,8 +476,29 @@ const usersController = {
           verification_code_expires: expires,
         },
       });
-
-      const transporter = nodemailer.createTransport({
+      const resend = new Resend('re_15Wdmav8_JhutMuqDKqt85VSM5iF34Aei');
+      const htmlContent = `
+  <div style="font-family: Arial, sans-serif; padding: 20px; background-color: #f9f9f9;">
+    <div style="max-width: 600px; margin: auto; background: white; border-radius: 8px; padding: 30px; box-shadow: 0 0 10px rgba(0,0,0,0.1);">
+      <h2 style="color: #2c3e50; text-align: center;">🔐 Verificación de cuenta</h2>
+      <p style="font-size: 16px; color: #333;">Hola,</p>
+      <p style="font-size: 16px; color: #333;">
+        Tu código de verificación es:
+      </p>
+      <div style="font-size: 28px; font-weight: bold; text-align: center; color: #1a73e8; margin: 20px 0;">
+        ${verificationCode}
+      </div>
+      <p style="font-size: 14px; color: #888;">Gracias por usar SmartEntry</p>
+    </div>
+  </div>
+`;
+      await resend.emails.send({
+        from: 'SmartEntry <no-reply@smartentry.space>',
+        to: email,
+        subject: 'Tu código de verificación',
+        html: htmlContent,
+      });
+      /*const transporter = nodemailer.createTransport({
         service: "gmail",
         auth: {
           user: process.env.EMAIL_USER,
@@ -435,7 +511,7 @@ const usersController = {
         to: email,
         subject: "Tu código de verificación",
         text: `Tu código de verificación es: ${verificationCode}`,
-      });
+      });*/
 
       res.status(200).json({
         status: "success",

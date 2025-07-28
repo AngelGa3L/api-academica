@@ -12,7 +12,9 @@ import rfidRoutes from "./routes/rfidRoutes.js";
 import attendanceRoutes from "./routes/attendanceRoutes.js";
 import sensorRoutes from "./routes/sensorRoutes.js";
 import graphicRoutes from "./routes/graphicRoutes.js"
+import dotenv from "dotenv";
 
+dotenv.config();
 const app = express();
 const port = 3000;
 
