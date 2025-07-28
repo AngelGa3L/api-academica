@@ -29,4 +29,34 @@ router.post(
   sensorsController.create
 );
 
+const updateSensor = [
+  body("name").optional().notEmpty().withMessage("El nombre es obligatorio"),
+  body("esp32_code")
+    .optional()
+    .notEmpty()
+    .withMessage("El código es obligatorio"),
+  body("type")
+    .optional()
+    .isIn(["access", "attendance", "other"])
+    .withMessage("El tipo debe ser access, attendance u other"),
+  body("classroom_id")
+    .optional()
+    .isInt({ min: 1 })
+    .withMessage("El ID debe ser un número entero positivo"),
+];
+router.get(
+  "/",
+  verifyToken,
+  checkRoles(["admin", "secretary"]),
+  sensorsController.getAll
+);
+
+router.put(
+  "/:id",
+  verifyToken,
+  checkRoles(["admin", "secretary"]),
+  updateSensor,
+  sensorsController.update
+);
+
 export default router;
