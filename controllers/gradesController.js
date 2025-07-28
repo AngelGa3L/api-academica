@@ -12,18 +12,6 @@ const gradesController = {
     }
     try {
       const { student_id, subject_id, unit_number, grade, notes } = req.body;
-      const existingGrade = await prisma.grades.findUnique({
-        where: { id: parseInt(id) },
-      });
-
-      if (!existingGrade) {
-        return res.status(404).json({
-          status: "error",
-          data: {},
-          msg: ["Calificación no encontrada"],
-        });
-      }
-
       const student = await prisma.users.findUnique({
         where: { id: student_id },
         include: { roles: true },
