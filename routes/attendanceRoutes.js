@@ -39,5 +39,11 @@ router.get(
   checkRoles(["student", "teacher"]),
   attendancesController.getByFilters
 );
+router.get(
+  "/group/:group_id",
+  verifyToken,
+  checkRoles(["admin", "secretary", "teacher"]),
+  attendancesController.getByGroup
+);
 
 export default router;
