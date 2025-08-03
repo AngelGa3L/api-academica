@@ -128,85 +128,90 @@ const attendancesController = {
     }
   },
   getByGroup: async (req, res) => {
-  try {
-    const { group_id } = req.params;
-    const { startDate, endDate, subject_id } = req.query;
+    try {
+      const { group_id } = req.params;
+      const { startDate, endDate, subject_id } = req.query;
 
-    if (!group_id) {
-      return res.status(400).json({
+      if (!group_id) {
+        return res.status(400).json({
+          status: "error",
+          data: {},
+          msg: ["El parámetro group_id es obligatorio"],
+        });
+      }
+
+      const students = await prisma.student_group.findMany({
+        where: {
+          group_id: parseInt(group_id),
+          users: { is_active: true },
+        },
+        select: {
+          student_id: true,
+          users: {
+            select: {
+              first_name: true,
+              last_name: true,
+            },
+          },
+        },
+      });
+
+      if (students.length === 0) {
+        return res.status(404).json({
+          status: "error",
+          data: {},
+          msg: ["No se encontraron estudiantes en este grupo"],
+        });
+      }
+
+      const where = {
+        user_id: { in: students.map((s) => s.student_id) },
+      };
+
+      if (subject_id) where.subject_id = parseInt(subject_id);
+
+      if (startDate || endDate) {
+        where.date = {};
+        if (startDate) where.date.gte = new Date(startDate);
+        if (endDate) where.date.lte = new Date(endDate);
+      }
+
+      const attendances = await prisma.attendance.findMany({
+        where,
+        orderBy: { date: "desc" },
+        select: {
+          id: true,
+          date: true,
+          check_in_time: true,
+          status: true,
+          notes: true,
+          users_attendance_user_idTousers: {
+            select: {
+              first_name: true,
+              last_name: true,
+            },
+          },
+          subjects: {
+            select: {
+              name: true,
+            },
+          },
+        },
+      });
+
+      return res.status(200).json({
+        status: "success",
+        data: attendances,
+        msg: ["Asistencias del grupo obtenidas correctamente"],
+      });
+    } catch (error) {
+      return res.status(500).json({
         status: "error",
         data: {},
-        msg: ["El parámetro group_id es obligatorio"],
+        msg: [error.message],
       });
     }
-
-    const students = await prisma.student_group.findMany({
-      where: {
-        group_id: parseInt(group_id),
-        users: { is_active: true },
-      },
-      select: {
-        student_id: true,
-        users: {
-          select: {
-            first_name: true,
-            last_name: true,
-          },
-        },
-      },
-    });
-
-    if (students.length === 0) {
-      return res.status(404).json({
-        status: "error",
-        data: {},
-        msg: ["No se encontraron estudiantes en este grupo"],
-      });
-    }
-
-    const where = {
-      user_id: { in: students.map(s => s.student_id) },
-    };
-
-    if (subject_id) where.subject_id = parseInt(subject_id);
-
-    if (startDate || endDate) {
-      where.date = {};
-      if (startDate) where.date.gte = new Date(startDate);
-      if (endDate) where.date.lte = new Date(endDate);
-    }
-
-    const attendances = await prisma.attendance.findMany({
-      where,
-      orderBy: { date: "desc" },
-      include: {
-        users: {
-          select: {
-            first_name: true,
-            last_name: true,
-          },
-        },
-        subjects: {
-          select: {
-            name: true,
-          },
-        },
-      },
-    });
-
-    return res.status(200).json({
-      status: "success",
-      data: attendances,
-      msg: ["Asistencias del grupo obtenidas correctamente"],
-    });
-  } catch (error) {
-    return res.status(500).json({
-      status: "error",
-      data: {},
-      msg: [error.message],
-    });
-  }
-},
+  },
 };
 
 export default attendancesController;
