@@ -44,37 +44,56 @@ const student_groupController = {
           msg: ["Grupo no encontrado"],
         });
       }
+
+      // Verificar si el estudiante ya está asignado a otro grupo en el mismo año académico
       const existingAssignment = await prisma.student_group.findFirst({
         where: {
           student_id,
-          group_id,
           academic_year,
         },
       });
 
       if (existingAssignment) {
-        return res.status(400).json({
-          status: "error",
-          data: {},
-          msg: [
-            "El estudiante ya está asignado a este grupo en este año académico",
-          ],
+        // Verificar si ya está asignado al mismo grupo
+        if (existingAssignment.group_id === group_id) {
+          return res.status(400).json({
+            status: "error",
+            data: {},
+            msg: [
+              "El estudiante ya está asignado a este grupo en este año académico",
+            ],
+          });
+        }
+        
+        // Si ya está asignado a un grupo diferente, actualizar la asignación
+        const updatedAssignment = await prisma.student_group.update({
+          where: { id: existingAssignment.id },
+          data: {
+            group_id,
+          },
+        });
+
+        res.status(200).json({
+          status: "success",
+          msg: "Estudiante movido al nuevo grupo exitosamente",
+          data: updatedAssignment,
+        });
+      } else {
+        // Si no está asignado a ningún grupo, crear nueva asignación
+        const studentGroup = await prisma.student_group.create({
+          data: {
+            student_id,
+            group_id,
+            academic_year,
+          },
+        });
+
+        res.status(201).json({
+          status: "success",
+          msg: "Estudiante asignado al grupo exitosamente",
+          data: studentGroup,
         });
       }
-
-      const studentGroup = await prisma.student_group.create({
-        data: {
-          student_id,
-          group_id,
-          academic_year,
-        },
-      });
-
-      res.status(201).json({
-        status: "success",
-        msg: "Estudiante asignado al grupo exitosamente",
-        data: studentGroup,
-      });
     } catch (error) {
       res.status(500).json({
         status: "error",
@@ -218,6 +237,14 @@ const student_groupController = {
               first_name: true,
               last_name: true,
               email: true,
+              role_id: true,
+            },
+            include: {
+              roles: {
+                select: {
+                  name: true,
+                },
+              },
             },
           },
         },
@@ -228,9 +255,14 @@ const student_groupController = {
         ],
       });
 
+      // Filtrar solo usuarios con rol de estudiante
+      const filteredStudentGroups = studentGroups.filter(
+        (assignment) => assignment.users.roles.name.toLowerCase() === "student"
+      );
+
       res.status(200).json({
         status: "success",
-        data: studentGroups,
+        data: filteredStudentGroups,
         msg: ["Lista de asignaciones obtenida correctamente"],
       });
     } catch (error) {
@@ -277,6 +309,14 @@ const student_groupController = {
               first_name: true,
               last_name: true,
               email: true,
+              role_id: true,
+            },
+            include: {
+              roles: {
+                select: {
+                  name: true,
+                },
+              },
             },
           },
         },
@@ -285,13 +325,16 @@ const student_groupController = {
         },
       });
 
-      const students = studentAssignments.map((assignment) => ({
-        student_id: assignment.users.id,
-        first_name: assignment.users.first_name,
-        last_name: assignment.users.last_name,
-        email: assignment.users.email,
-        academic_year: assignment.academic_year,
-      }));
+      // Filtrar solo usuarios con rol de estudiante
+      const students = studentAssignments
+        .filter((assignment) => assignment.users.roles.name.toLowerCase() === "student")
+        .map((assignment) => ({
+          student_id: assignment.users.id,
+          first_name: assignment.users.first_name,
+          last_name: assignment.users.last_name,
+          email: assignment.users.email,
+          academic_year: assignment.academic_year,
+        }));
 
       res.status(200).json({
         status: "success",
