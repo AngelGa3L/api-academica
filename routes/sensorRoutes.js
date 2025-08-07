@@ -13,8 +13,8 @@ const registerSensor = [
   body("type")
     .notEmpty()
     .withMessage("El tipo debe ser obligatorio")
-    .isIn(["access", "attendance", "other"])
-    .withMessage("El tipo debe ser access, attendance u other"),
+    .isIn(["access", "attendance", "work_entry", "work_out"])
+    .withMessage("El tipo debe ser access, attendance, work_entry o work_out"),
   body("classroom_id")
     .optional()
     .isInt({ min: 1 })
@@ -37,8 +37,8 @@ const updateSensor = [
     .withMessage("El código es obligatorio"),
   body("type")
     .optional()
-    .isIn(["access", "attendance", "other"])
-    .withMessage("El tipo debe ser access, attendance u other"),
+    .isIn(["access", "attendance", "work_entry", "work_out"])
+    .withMessage("El tipo debe ser access, attendance, work_entry o work_out"),
   body("classroom_id")
     .optional()
     .isInt({ min: 1 })
