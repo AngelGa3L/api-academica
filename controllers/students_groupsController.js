@@ -358,6 +358,57 @@ const student_groupController = {
       });
     }
   },
+  //Eliminar asignación de estudiante a grupo
+  deleteAssignment: async (req, res) => {
+    try {
+      const { student_id, group_id, academic_year } = req.params;
+      if (!student_id || !group_id || !academic_year) {
+        return res.status(400).json({
+          status: "error",
+          data: {},
+          msg: ["Faltan parámetros obligatorios"],
+        });
+      }
+      // Buscar la asignación
+      const assignment = await prisma.student_group.findFirst({
+        where: {
+          student_id: parseInt(student_id),
+          group_id: parseInt(group_id),
+          academic_year: parseInt(academic_year),
+        },
+      });
+      if (!assignment) {
+        return res.status(404).json({
+          status: "error",
+          data: {},
+          msg: [
+            "No se encontró la asignación del estudiante al grupo en ese año académico",
+          ],
+        });
+      }
+      // Eliminar la asignación principal
+      await prisma.student_group.delete({
+        where: { id: assignment.id },
+      });
+      // Eliminar asignaciones relacionadas en teacher_subject_group si existen
+      await prisma.teacher_subject_group.deleteMany({
+        where: {
+          group_id: parseInt(group_id),
+          teacher_id: parseInt(student_id), // Si el estudiante es también maestro en ese grupo
+        },
+      });
+      res.status(200).json({
+        status: "success",
+        msg: ["Asignación eliminada correctamente"],
+      });
+    } catch (error) {
+      res.status(500).json({
+        status: "error",
+        data: {},
+        msg: [error.message],
+      });
+    }
+  },
 };
 
 export default student_groupController;

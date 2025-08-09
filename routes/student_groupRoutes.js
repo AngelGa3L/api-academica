@@ -40,7 +40,7 @@ router.post(
   student_groupController.create
 );
 
-//Ver los grupos y estudiantes 
+//Ver los grupos y estudiantes
 router.get("/", verifyToken, student_groupController.getAll);
 
 //Obtener estudiantes de un grupo específico
@@ -66,6 +66,12 @@ router.put(
       .withMessage("El año académico debe ser un año válido entre 2000 y 2100"),
   ],
   student_groupController.update
+);
+router.delete(
+  "/:student_id/:group_id/:academic_year",
+  verifyToken,
+  rolesMiddleware(["admin", "secretary"]),
+  student_groupController.deleteAssignment
 );
 
 export default router;
