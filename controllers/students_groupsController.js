@@ -64,7 +64,7 @@ const student_groupController = {
             ],
           });
         }
-        
+
         // Si ya está asignado a un grupo diferente, actualizar la asignación
         const updatedAssignment = await prisma.student_group.update({
           where: { id: existingAssignment.id },
@@ -302,7 +302,8 @@ const student_groupController = {
 
       const studentAssignments = await prisma.student_group.findMany({
         where,
-        include: {
+        select: {
+          academic_year: true,
           users: {
             select: {
               id: true,
@@ -310,8 +311,6 @@ const student_groupController = {
               last_name: true,
               email: true,
               role_id: true,
-            },
-            include: {
               roles: {
                 select: {
                   name: true,
@@ -327,7 +326,10 @@ const student_groupController = {
 
       // Filtrar solo usuarios con rol de estudiante
       const students = studentAssignments
-        .filter((assignment) => assignment.users.roles.name.toLowerCase() === "student")
+        .filter(
+          (assignment) =>
+            assignment.users.roles.name.toLowerCase() === "student"
+        )
         .map((assignment) => ({
           student_id: assignment.users.id,
           first_name: assignment.users.first_name,
