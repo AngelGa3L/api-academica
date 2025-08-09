@@ -12,6 +12,16 @@ const classroomsController = {
     }
     try {
       const { name } = req.body;
+      const exists = await prisma.classrooms.findFirst({
+        where: { name },
+      });
+      if (exists) {
+        return res.status(400).json({
+          status: "error",
+          data: {},
+          msg: ["Ya existe un aula con este nombre"],
+        });
+      }
 
       const classroom = await prisma.classrooms.create({
         data: {
