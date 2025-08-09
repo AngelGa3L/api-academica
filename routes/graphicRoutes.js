@@ -37,4 +37,10 @@ router.get(
   checkRoles(["admin", "secretary"]),
   graphicsController.logsByClassroom
 );
+router.get(
+  "/sensor-responses",
+  verifyToken,
+  checkRoles(["admin", "secretary"]),
+  graphicsController.getSensorResponses
+);
 export default router;

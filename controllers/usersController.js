@@ -5,7 +5,7 @@ import jwt from "jsonwebtoken";
 import { body, validationResult } from "express-validator";
 import nodemailer from "nodemailer";
 import crypto from "crypto";
-import { Resend } from 'resend';
+import { Resend } from "resend";
 
 const secretKey = process.env.JWT_SECRET_KEY;
 const prisma = new PrismaClient();
@@ -123,7 +123,7 @@ const usersController = {
         subject: "Tu código de verificación",
         text: `Tu código de verificación es: ${verificationCode}`,
       });*/
-      const resend = new Resend('re_15Wdmav8_JhutMuqDKqt85VSM5iF34Aei');
+      const resend = new Resend("re_15Wdmav8_JhutMuqDKqt85VSM5iF34Aei");
       const htmlContent = `
   <div style="font-family: Arial, sans-serif; padding: 20px; background-color: #f9f9f9;">
     <div style="max-width: 600px; margin: auto; background: white; border-radius: 8px; padding: 30px; box-shadow: 0 0 10px rgba(0,0,0,0.1);">
@@ -144,7 +144,7 @@ const usersController = {
 `;
 
       resend.emails.send({
-        from: 'SmartEntry <no-reply@smartentry.space>',
+        from: "SmartEntry <no-reply@smartentry.space>",
         to: user.email,
         subject: "Tu código de verificación",
         html: htmlContent,
@@ -199,7 +199,13 @@ const usersController = {
       });
       res.status(200).json({
         status: "success",
-        data: { id: user.id, email: user.email, token },
+        data: {
+          id: user.id,
+          first_name: user.first_name,
+          last_name: user.last_name,
+          email: user.email,
+          token,
+        },
         msg: "Login exitoso",
       });
     } catch (error) {
@@ -371,7 +377,7 @@ const usersController = {
         text: `Haz clic en el siguiente enlace para recuperar tu contraseña: ${resetUrl}`,
         html: `<p>Haz clic en el siguiente <a href="${resetUrl}">enlace para recuperar tu contraseña</a>.</p>`,
       });*/
-      const resend = new Resend('re_15Wdmav8_JhutMuqDKqt85VSM5iF34Aei');
+      const resend = new Resend("re_15Wdmav8_JhutMuqDKqt85VSM5iF34Aei");
       const resetUrl = `https://smartentry.space/reset-password?token=${token}&email=${email}`;
       const htmlContent = `
   <div style="font-family: Arial, sans-serif; padding: 20px; background-color: #f9f9f9;">
@@ -393,9 +399,9 @@ const usersController = {
   </div>
 `;
       await resend.emails.send({
-        from: 'SmartEntry <no-reply@smartentry.space>',
+        from: "SmartEntry <no-reply@smartentry.space>",
         to: user.email,
-        subject: 'Recupera tu contraseña',
+        subject: "Recupera tu contraseña",
         html: htmlContent,
       });
       res.status(200).json({
@@ -476,7 +482,7 @@ const usersController = {
           verification_code_expires: expires,
         },
       });
-      const resend = new Resend('re_15Wdmav8_JhutMuqDKqt85VSM5iF34Aei');
+      const resend = new Resend("re_15Wdmav8_JhutMuqDKqt85VSM5iF34Aei");
       const htmlContent = `
   <div style="font-family: Arial, sans-serif; padding: 20px; background-color: #f9f9f9;">
     <div style="max-width: 600px; margin: auto; background: white; border-radius: 8px; padding: 30px; box-shadow: 0 0 10px rgba(0,0,0,0.1);">
@@ -493,9 +499,9 @@ const usersController = {
   </div>
 `;
       await resend.emails.send({
-        from: 'SmartEntry <no-reply@smartentry.space>',
+        from: "SmartEntry <no-reply@smartentry.space>",
         to: email,
-        subject: 'Tu código de verificación',
+        subject: "Tu código de verificación",
         html: htmlContent,
       });
       /*const transporter = nodemailer.createTransport({

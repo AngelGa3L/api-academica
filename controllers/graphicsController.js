@@ -311,6 +311,43 @@ const graphicsController = {
       res.status(500).json({ status: "error", msg: error.message });
     }
   },
+  getSensorResponses: async (req, res) => {
+    try {
+      const { startDate, endDate } = req.query;
+
+      // Construir filtro de fecha
+      const dateFilter = {};
+      if (startDate) dateFilter.gte = new Date(startDate);
+      if (endDate) dateFilter.lte = new Date(endDate);
+
+      const where = {};
+      if (Object.keys(dateFilter).length > 0) {
+        where.created_at = dateFilter;
+      }
+
+      const responses = await prisma.sensor_responses.findMany({
+        where,
+        orderBy: { created_at: "desc" },
+        select: {
+          id: true,
+          sensor_id: true,
+          response: true,
+          created_at: true,
+          sensors: {
+            select: { name: true },
+          },
+        },
+      });
+
+      res.status(200).json({
+        status: "success",
+        data: responses,
+        msg: "Lista de respuestas de sensores obtenida correctamente",
+      });
+    } catch (error) {
+      res.status(500).json({ status: "error", msg: error.message });
+    }
+  },
 };
 
 export default graphicsController;
