@@ -375,6 +375,150 @@ const gradesController = {
       });
     }
   },
+  getByGroupAndSubject: async (req, res) => {
+    try {
+      const { group_id, subject_id } = req.params;
+
+      // Verificar que el grupo existe
+      const group = await prisma.groups.findUnique({
+        where: { id: parseInt(group_id) },
+      });
+
+      if (!group) {
+        return res.status(404).json({
+          status: "error",
+          data: {},
+          msg: ["Grupo no encontrado"],
+        });
+      }
+
+      // Verificar que la materia existe
+      const subject = await prisma.subjects.findUnique({
+        where: { id: parseInt(subject_id) },
+        include: {
+          teacher_subject_group: {
+            where: { group_id: parseInt(group_id) },
+            include: {
+              users: {
+                select: {
+                  id: true,
+                  first_name: true,
+                  last_name: true,
+                  email: true,
+                },
+              },
+            },
+          },
+        },
+      });
+
+      if (!subject) {
+        return res.status(404).json({
+          status: "error",
+          data: {},
+          msg: ["Materia no encontrada"],
+        });
+      }
+
+      // Obtener estudiantes del grupo
+      const students = await prisma.student_group.findMany({
+        where: {
+          group_id: parseInt(group_id),
+          users: { is_active: true },
+        },
+        select: {
+          student_id: true,
+          users: {
+            select: {
+              id: true,
+              first_name: true,
+              last_name: true,
+              email: true,
+            },
+          },
+        },
+      });
+
+      if (students.length === 0) {
+        return res.status(404).json({
+          status: "error",
+          data: {},
+          msg: ["No se encontraron estudiantes activos en este grupo"],
+        });
+      }
+
+      // Obtener calificaciones de todos los estudiantes del grupo en esa materia
+      const grades = await prisma.grades.findMany({
+        where: {
+          student_id: { in: students.map(s => s.student_id) },
+          subject_id: parseInt(subject_id),
+        },
+        orderBy: [
+          { student_id: "asc" },
+          { unit_number: "asc" },
+        ],
+      });
+
+      // Organizar datos por estudiante
+      const studentsWithGrades = students.map(student => {
+        const studentGrades = grades.filter(grade => grade.student_id === student.student_id);
+        const totalGrades = studentGrades.length;
+        const average = totalGrades > 0 
+          ? studentGrades.reduce((sum, grade) => sum + parseFloat(grade.grade), 0) / totalGrades 
+          : 0;
+
+        return {
+          student: {
+            id: student.users.id,
+            first_name: student.users.first_name,
+            last_name: student.users.last_name,
+            email: student.users.email,
+          },
+          grades: studentGrades.map(grade => ({
+            id: grade.id,
+            unit_number: grade.unit_number,
+            grade: parseFloat(grade.grade),
+            notes: grade.notes,
+          })),
+          total_grades: totalGrades,
+          average: parseFloat(average.toFixed(2)),
+        };
+      });
+
+      return res.status(200).json({
+        status: "success",
+        data: {
+          group: {
+            id: group.id,
+            name: group.name,
+            grade: group.grade,
+          },
+          subject: {
+            id: subject.id,
+            name: subject.name,
+            code: subject.code,
+          },
+          teacher: subject.teacher_subject_group.length > 0
+            ? {
+                id: subject.teacher_subject_group[0].users.id,
+                first_name: subject.teacher_subject_group[0].users.first_name,
+                last_name: subject.teacher_subject_group[0].users.last_name,
+                email: subject.teacher_subject_group[0].users.email,
+              }
+            : null,
+          students: studentsWithGrades,
+          total_students: studentsWithGrades.length,
+        },
+        msg: ["Calificaciones del grupo por materia obtenidas exitosamente"],
+      });
+    } catch (error) {
+      return res.status(500).json({
+        status: "error",
+        data: {},
+        msg: [error.message],
+      });
+    }
+  },
 };
 
 export default gradesController;

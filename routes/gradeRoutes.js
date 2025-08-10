@@ -98,4 +98,11 @@ router.get(
   gradesController.getByStudentAndSubject
 );
 
+router.get(
+  "/group/:group_id/subject/:subject_id",
+  verifyToken,
+  checkIsActive,
+  gradesController.getByGroupAndSubject
+);
+
 export default router;
