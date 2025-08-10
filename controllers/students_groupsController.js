@@ -230,7 +230,11 @@ const student_groupController = {
 
       const studentGroups = await prisma.student_group.findMany({
         where,
-        include: {
+        select: {
+          id: true,
+          student_id: true,
+          group_id: true,
+          academic_year: true,
           users: {
             select: {
               id: true,
@@ -238,13 +242,18 @@ const student_groupController = {
               last_name: true,
               email: true,
               role_id: true,
-            },
-            include: {
               roles: {
                 select: {
                   name: true,
                 },
               },
+            },
+          },
+          groups: {
+            select: {
+              id: true,
+              name: true,
+              grade: true,
             },
           },
         },
