@@ -3,6 +3,7 @@ import { body } from "express-validator";
 import gradesController from "../controllers/gradesController.js";
 import rolesMiddleware from "../middlewares/roles.js";
 import verifyToken from "../middlewares/auth.js";
+import checkIsActive from "../middlewares/is_active.js";
 
 const router = express.Router();
 
@@ -68,6 +69,7 @@ const updateGrade = [
 router.post(
   "/",
   verifyToken,
+  checkIsActive,
   rolesMiddleware(["teacher"]),
   registerGrade,
   gradesController.register
@@ -76,6 +78,7 @@ router.post(
 router.put(
   "/:id",
   verifyToken,
+  checkIsActive,
   rolesMiddleware(["teacher"]),
   updateGrade,
   gradesController.update
@@ -84,12 +87,14 @@ router.put(
 router.get(
   "/student/:student_id",
   verifyToken,
+  checkIsActive,
   gradesController.getByStudentId
 );
 
 router.get(
   "/student/:student_id/:subject_id",
   verifyToken,
+  checkIsActive,
   gradesController.getByStudentAndSubject
 );
 

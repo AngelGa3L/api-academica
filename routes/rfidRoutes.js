@@ -1,5 +1,6 @@
 import express from "express";
 import verifyToken from "../middlewares/auth.js";
+import checkIsActive from "../middlewares/is_active.js";
 import { body, validationResult } from "express-validator";
 import checkRoles from "../middlewares/roles.js";
 import rfidsController from "../controllers/rfidsController.js";
@@ -30,6 +31,7 @@ const updateRfid = [
 router.post(
   "/create",
   verifyToken,
+  checkIsActive,
   checkRoles(["admin", "secretary"]),
   rfidValidationRules,
   rfidsController.create
@@ -38,6 +40,7 @@ router.post(
 router.put(
   "/:id",
   verifyToken,
+  checkIsActive,
   checkRoles(["admin", "secretary"]),
   updateRfid,
   rfidsController.update
@@ -46,6 +49,7 @@ router.put(
 router.get(
   "/",
   verifyToken,
+  checkIsActive,
   checkRoles(["admin", "secretary"]),
   rfidsController.getAll
 );
@@ -53,6 +57,7 @@ router.get(
 router.get(
   "/users/:user_id",
   verifyToken,
+  checkIsActive,
   checkRoles(["admin", "secretary"]),
   rfidsController.getByUser
 );
@@ -60,6 +65,7 @@ router.get(
 router.delete(
   "/:id",
   verifyToken,
+  checkIsActive,
   checkRoles(["admin", "secretary"]),
   rfidsController.delete
 );

@@ -1,5 +1,6 @@
 import express from "express";
 import verifyToken from "../middlewares/auth.js";
+import checkIsActive from "../middlewares/is_active.js";
 import { body, param } from "express-validator";
 import checkRoles from "../middlewares/roles.js";
 import teacherSubjectGroupController from "../controllers/teacherSubjectGroupController.js";
@@ -81,28 +82,32 @@ const studentIdValidation = [
     .withMessage("El ID delstudent debe ser un número entero positivo"),
 ];
 
-router.get("/", verifyToken, teacherSubjectGroupController.getAll);
+router.get("/", verifyToken, checkIsActive, teacherSubjectGroupController.getAll);
 router.get(
   "/teacher/:teacher_id",
   verifyToken,
+  checkIsActive,
   teacherIdValidation,
   teacherSubjectGroupController.getByTeacher
 );
 router.get(
   "/group/:group_id",
   verifyToken,
+  checkIsActive,
   groupIdValidation,
   teacherSubjectGroupController.getByGroup
 );
 router.get(
   "/:id",
   verifyToken,
+  checkIsActive,
   idValidation,
   teacherSubjectGroupController.getById
 );
 router.get(
   "/student/:student_id",
   verifyToken,
+  checkIsActive,
   checkRoles(["student"]),
   studentIdValidation,
   teacherSubjectGroupController.getByStudent
@@ -111,6 +116,7 @@ router.get(
 router.post(
   "/create",
   verifyToken,
+  checkIsActive,
   checkRoles(["admin", "secretary"]),
   createAssignmentValidation,
   teacherSubjectGroupController.create
@@ -119,6 +125,7 @@ router.post(
 router.put(
   "/:id",
   verifyToken,
+  checkIsActive,
   checkRoles(["admin", "secretary"]),
   idValidation,
   updateAssignmentValidation,
@@ -128,6 +135,7 @@ router.put(
 router.delete(
   "/:id",
   verifyToken,
+  checkIsActive,
   checkRoles(["admin"]),
   idValidation,
   teacherSubjectGroupController.delete

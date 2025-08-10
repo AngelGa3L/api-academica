@@ -2,6 +2,7 @@ import express from "express";
 import { body } from "express-validator";
 import attendancesController from "../controllers/attendancesController.js";
 import verifyToken from "../middlewares/auth.js";
+import checkIsActive from "../middlewares/is_active.js";
 import checkRoles from "../middlewares/roles.js";
 
 const router = express.Router();
@@ -9,6 +10,7 @@ const router = express.Router();
 router.post(
   "/",
   verifyToken,
+  checkIsActive,
   checkRoles(["teacher"]),
   [
     body("user_id").isInt(),
@@ -25,6 +27,7 @@ router.post(
 router.put(
   "/:id",
   verifyToken,
+  checkIsActive,
   checkRoles(["teacher"]),
   [
     body("check_in_time").optional().isISO8601(),
@@ -36,12 +39,14 @@ router.put(
 router.get(
   "/",
   verifyToken,
+  checkIsActive,
   checkRoles(["student", "teacher"]),
   attendancesController.getByFilters
 );
 router.get(
   "/group/:group_id",
   verifyToken,
+  checkIsActive,
   checkRoles(["admin", "secretary", "teacher"]),
   attendancesController.getByGroup
 );

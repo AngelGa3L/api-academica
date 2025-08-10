@@ -1,5 +1,6 @@
 import express from "express";
 import verifyToken from "../middlewares/auth.js";
+import checkIsActive from "../middlewares/is_active.js";
 import { body } from "express-validator";
 import checkRoles from "../middlewares/roles.js";
 import classroomController from "../controllers/classroomsController.js";
@@ -24,6 +25,7 @@ const updateClassroomValidation = [
 router.post(
   "/create",
   verifyToken,
+  checkIsActive,
   checkRoles(["admin", "secretary"]),
   registerClassroomValidation,
   classroomController.register
@@ -32,6 +34,7 @@ router.post(
 router.put(
   "/:id",
   verifyToken,
+  checkIsActive,
   checkRoles(["admin", "secretary"]),
   updateClassroomValidation,
   classroomController.update
@@ -40,10 +43,11 @@ router.put(
 router.get(
   "/",
   verifyToken,
+  checkIsActive,
   checkRoles(["admin", "secretary"]),
   classroomController.getAll
 );
 
-router.get("/:id", verifyToken, classroomController.getByid);
+router.get("/:id", verifyToken, checkIsActive, classroomController.getByid);
 
 export default router;

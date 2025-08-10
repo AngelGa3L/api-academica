@@ -1,6 +1,7 @@
 import express from "express";
 import usersController from "../controllers/usersController.js";
 import verifyToken from "../middlewares/auth.js";
+import checkIsActive from "../middlewares/is_active.js";
 import { body, validationResult } from "express-validator";
 import checkRoles from "../middlewares/roles.js";
 import { PrismaClient } from "../generated/prisma/index.js";
@@ -56,6 +57,7 @@ router.post(
 router.put(
   "/update/:id",
   verifyToken,
+  checkIsActive,
   checkRoles(["admin", "secretary"]),
   [
     body("first_name")
@@ -104,6 +106,7 @@ router.put(
 router.get(
   "/users",
   verifyToken,
+  checkIsActive,
   checkRoles(["admin", "secretary"]),
   usersController.getAll
 );
@@ -111,6 +114,7 @@ router.get(
 router.get(
   "/users/:id",
   verifyToken,
+  checkIsActive,
   checkRoles(["admin", "secretary"]),
   usersController.getById
 );
@@ -118,6 +122,7 @@ router.get(
 router.get(
   "/users/roles/:role_id",
   verifyToken,
+  checkIsActive,
   checkRoles(["admin", "secretary"]),
   usersController.getByRole
 );

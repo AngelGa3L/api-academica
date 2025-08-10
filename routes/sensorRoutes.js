@@ -3,6 +3,7 @@ import { body } from "express-validator";
 import sensorsController from "../controllers/sensorsController.js";
 import rolesMiddleware from "../middlewares/roles.js";
 import verifyToken from "../middlewares/auth.js";
+import checkIsActive from "../middlewares/is_active.js";
 import checkRoles from "../middlewares/roles.js";
 
 const router = express.Router();
@@ -24,6 +25,7 @@ const registerSensor = [
 router.post(
   "/",
   verifyToken,
+  checkIsActive,
   checkRoles(["admin", "secretary"]),
   registerSensor,
   sensorsController.create
@@ -47,6 +49,7 @@ const updateSensor = [
 router.get(
   "/",
   verifyToken,
+  checkIsActive,
   checkRoles(["admin", "secretary"]),
   sensorsController.getAll
 );
@@ -54,6 +57,7 @@ router.get(
 router.put(
   "/:id",
   verifyToken,
+  checkIsActive,
   checkRoles(["admin", "secretary"]),
   updateSensor,
   sensorsController.update

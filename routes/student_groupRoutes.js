@@ -4,6 +4,7 @@ import student_groupController from "../controllers/students_groupsController.js
 import authMiddleware from "../middlewares/auth.js";
 import rolesMiddleware from "../middlewares/roles.js";
 import verifyToken from "../middlewares/auth.js";
+import checkIsActive from "../middlewares/is_active.js";
 
 const router = express.Router();
 
@@ -35,24 +36,27 @@ router.use(authMiddleware);
 router.post(
   "/assign",
   verifyToken,
+  checkIsActive,
   rolesMiddleware(["admin", "secretary"]),
   createStudentGroupValidation,
   student_groupController.create
 );
 
 //Ver los grupos y estudiantes
-router.get("/", verifyToken, student_groupController.getAll);
+router.get("/", verifyToken, checkIsActive, student_groupController.getAll);
 
 //Obtener estudiantes de un grupo específico
 router.get(
   "/:group_id/students",
   verifyToken,
+  checkIsActive,
   student_groupController.getStudentsByGroup
 );
 // Actualizar asignación
 router.put(
   "/student/update",
   verifyToken,
+  checkIsActive,
   rolesMiddleware(["admin", "secretary"]),
   [
     body("student_id")

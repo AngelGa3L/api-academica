@@ -4,6 +4,7 @@ import groupsController from "../controllers/groupsController.js";
 import authMiddleware from "../middlewares/auth.js";
 import rolesMiddleware from "../middlewares/roles.js";
 import verifyToken from "../middlewares/auth.js";
+import checkIsActive from "../middlewares/is_active.js";
 
 const router = express.Router();
 
@@ -49,18 +50,20 @@ router.use(authMiddleware);
 router.post(
   "/create",
   verifyToken,
+  checkIsActive,
   rolesMiddleware(["admin", "secretary"]),
   createGroupValidation,
   groupsController.create
 );
 
-router.get("/list", verifyToken, groupsController.getAll);
+router.get("/list", verifyToken, checkIsActive, groupsController.getAll);
 
-router.get("/:id", verifyToken, groupsController.getById);
+router.get("/:id", verifyToken, checkIsActive, groupsController.getById);
 
 router.put(
   "/:id",
   verifyToken,
+  checkIsActive,
   rolesMiddleware(["admin", "secretary"]),
   updateGroupValidation,
   groupsController.update
@@ -69,6 +72,7 @@ router.put(
 router.delete(
   "/:id",
   verifyToken,
+  checkIsActive,
   rolesMiddleware(["admin"]),
   groupsController.delete
 );

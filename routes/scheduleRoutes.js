@@ -1,5 +1,6 @@
 import express from "express";
 import verifyToken from "../middlewares/auth.js";
+import checkIsActive from "../middlewares/is_active.js";
 import { body, param } from "express-validator";
 import checkRoles from "../middlewares/roles.js";
 import schedulesController from "../controllers/schedulesController.js";
@@ -57,18 +58,20 @@ const weekdayValidation = [
     ),
 ];
 
-router.get("/", verifyToken, schedulesController.getAll);
+router.get("/", verifyToken, checkIsActive, schedulesController.getAll);
 router.get(
   "/weekday/:weekday",
   verifyToken,
+  checkIsActive,
   weekdayValidation,
   schedulesController.getByWeekday
 );
-router.get("/:id", verifyToken, idValidation, schedulesController.getById);
+router.get("/:id", verifyToken, checkIsActive, idValidation, schedulesController.getById);
 
 router.post(
   "/create",
   verifyToken,
+  checkIsActive,
   checkRoles(["admin", "secretary"]),
   createScheduleValidation,
   schedulesController.create
@@ -77,6 +80,7 @@ router.post(
 router.put(
   "/:id",
   verifyToken,
+  checkIsActive,
   checkRoles(["admin", "secretary"]),
   idValidation,
   updateScheduleValidation,
