@@ -11,7 +11,8 @@ import gradeRoutes from "./routes/gradeRoutes.js";
 import rfidRoutes from "./routes/rfidRoutes.js";
 import attendanceRoutes from "./routes/attendanceRoutes.js";
 import sensorRoutes from "./routes/sensorRoutes.js";
-import graphicRoutes from "./routes/graphicRoutes.js"
+import graphicRoutes from "./routes/graphicRoutes.js";
+import restriccionRoutes from "./routes/restriccionRoutes.js";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -39,6 +40,7 @@ app.use("/api/academic/rfid/", rfidRoutes);
 app.use("/api/academic/attendance/", attendanceRoutes);
 app.use("/api/academic/hardware/", sensorRoutes);
 app.use("/api/academic/graphics/", graphicRoutes);
+app.use("/api/academic/restrictions/", restriccionRoutes);
 app.listen(port, () => {
   console.log(`App listening on port ${port}`);
 });

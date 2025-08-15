@@ -307,7 +307,20 @@ const usersController = {
       }
       const users = await prisma.users.findMany({
         where: { role_id: parseInt(role_id) },
-        include: { roles: true },
+        include: { 
+          roles: true,
+          student_group: {
+            include: {
+              groups: {
+                select: {
+                  id: true,
+                  name: true,
+                  grade: true,
+                },
+              },
+            },
+          },
+        },
         orderBy: [{ first_name: "asc" }, { last_name: "asc" }],
       });
 
